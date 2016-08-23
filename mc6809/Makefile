@@ -1,0 +1,19 @@
+include ../options.mk
+
+CFLAGS+=$(R2_CFLAGS) -Wall -shared -fPIC -DLIL_ENDIAN=1
+LDFLAGS+=$(R2_LDFLAGS) $(LINK) -lr_util
+
+TARGET_ASM=asm_mc6809.$(LIBEXT)
+
+OBJ_ASM=asm_mc6809.o
+
+ALL_TARGETS=$(TARGET_ASM)
+
+all: $(ALL_TARGETS)
+
+$(TARGET_ASM): $(OBJ_ASM)
+	$(CC) $(call libname,asm_mc6809) $(LDFLAGS) \
+		$(CFLAGS) -o $(TARGET_ASM) $(OBJ_ASM)
+
+clean:
+	rm -f *.$(LIBEXT) *.o
