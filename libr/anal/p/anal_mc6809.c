@@ -13,6 +13,8 @@ static void mc6809_op_size (const ut8 *data, int *size, int *size_prefix) {
 static int mc6809_anal_op (RAnal *anal, RAnalOp *op, ut64 addr, const ut8 *data, int len) {
 	int ilen;
 
+	memset (op, 0, sizeof(RAnalOp));
+
 	mc6809_op_size (data, &len, &op->nopcode);
 
 
