@@ -7,7 +7,7 @@
 #include "mc6809.h"
 
 static int disassemble(RAsm *a, RAsmOp *op, const ut8 *buf, int len) {
-	return mc6809_disassemble(a->pc, op, buf, len);
+	return (op->size = mc6809_disassemble (a->pc, op->buf_asm, buf, len));
 }
 
 RAsmPlugin r_asm_plugin_mc6809 = {

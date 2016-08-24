@@ -1007,7 +1007,8 @@ static int mc6809_append_pushpull_args(enum instruction_mode mode,
 	return 2;
 }
 
-int mc6809_disassemble(ut64 addr, RAsmOp *op, const ut8 *buf, int len) {
+int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len) {
+	int size;
 	ut8 tfrexg_regmasked;
 	const char *tfrexg_source_reg;
 	const char *tfrexg_dest_reg;
@@ -1017,20 +1018,20 @@ int mc6809_disassemble(ut64 addr, RAsmOp *op, const ut8 *buf, int len) {
 	/* opcode_args points to the first argument byte of the opcode */
 	const ut8 *opcode_args = &buf[1];
 
-	op->size = 0;
+	size = 0;
 
 	switch (mc6809_opcode->mode) {
 	case PAGE2:
 		/* step past the page 2 prefix */
 		mc6809_opcode = &mc6809_page2_opcodes[buf[1]];
 		opcode_args++;
-		op->size++;
+		size++;
 		break;
 	case PAGE3:
 		/* step past the page 3 prefix */
 		mc6809_opcode = &mc6809_page3_opcodes[buf[1]];
 		opcode_args++;
-		op->size++;
+		size++;
 		break;
 	default:
 		/* non-paged opcode, fall through to the next switch */
@@ -1041,58 +1042,58 @@ int mc6809_disassemble(ut64 addr, RAsmOp *op, const ut8 *buf, int len) {
 	case NOMODE:
 	case PAGE2: /* PAGE2 and PAGE3 shouldn't occur twice in a row */
 	case PAGE3:
-		op->size++;
-		strcpy (op->buf_asm, "INVALID");
+		size++;
+		strcpy (buf_asm, "INVALID");
 		break;
 	case INHERENT:
-		op->size++;
-		strcpy (op->buf_asm, mc6809_opcode->name);
+		size++;
+		strcpy (buf_asm, mc6809_opcode->name);
 		break;
 	case IMMEDIATE:
-		op->size += 2;
-		sprintf (op->buf_asm,
+		size += 2;
+		sprintf (buf_asm,
 			 "%s #$%02x", mc6809_opcode->name, *opcode_args);
 		break;
 	case IMMEDIATELONG:
-		op->size += 3;
-		sprintf (op->buf_asm,
+		size += 3;
+		sprintf (buf_asm,
 			"%s #$%04x", mc6809_opcode->name,
 			opcode_args[0] * 256 + opcode_args[1]);
 		break;
 	case DIRECT:
-		op->size += 2;
-		sprintf (op->buf_asm,
+		size += 2;
+		sprintf (buf_asm,
 			 "%s <$%02x", mc6809_opcode->name, *opcode_args);
 		break;
 	case RELATIVE:
-		op->size += 2;
-		sprintf (op->buf_asm, "%s $%04x",
+		size += 2;
+		sprintf (buf_asm, "%s $%04x",
 			mc6809_opcode->name,
-			(ut16) (addr + (st8) *opcode_args + op->size) & 0xFFFF);
+			(ut16) (addr + (st8) *opcode_args + size) & 0xFFFF);
 		break;
 	case RELATIVELONG:
-		op->size += 3;
-		sprintf (op->buf_asm, "%s $%04x", mc6809_opcode->name,
-			(ut16) (addr + (st16)(opcode_args[0]*256+opcode_args[1])+op->size) & 0xFFFF);
+		size += 3;
+		sprintf (buf_asm, "%s $%04x", mc6809_opcode->name,
+			(ut16) (addr + (st16)(opcode_args[0]*256+opcode_args[1])+size) & 0xFFFF);
 		break;
 	case TFREXG:
 		/* In the transfer/exchange mode, both top bits of the
 		   nibbles must be identical in a valid opcode */
 		tfrexg_regmasked = *opcode_args & 0x88;
 		if (tfrexg_regmasked && tfrexg_regmasked != 0x88) {
-			op->size += 1;
-			strcpy (op->buf_asm, "INVALID");
+			size += 1;
+			strcpy (buf_asm, "INVALID");
 		} else {
 			tfrexg_source_reg = \
 				mc6809_register_field[(*opcode_args >> 4) & 0x0f];
 			tfrexg_dest_reg = \
 				mc6809_register_field[*opcode_args & 0x0f];
 			if (!tfrexg_source_reg || !tfrexg_dest_reg) {
-				op->size += 1;
-				strcpy (op->buf_asm, "INVALID");
+				size += 1;
+				strcpy (buf_asm, "INVALID");
 			} else {
-				op->size += 2;
-				sprintf (op->buf_asm,
+				size += 2;
+				sprintf (buf_asm,
 					 "%s %s,%s",
 					 mc6809_opcode->name,
 					 tfrexg_source_reg,
@@ -1103,26 +1104,26 @@ int mc6809_disassemble(ut64 addr, RAsmOp *op, const ut8 *buf, int len) {
 		break;
 	case INDEXED:
 		/* Load Effective Address opcode - variable length */
-		strcpy (op->buf_asm, mc6809_opcode->name);
-		op->size += mc6809_append_indexed_args (op->buf_asm,
-							opcode_args) + 1;
+		strcpy (buf_asm, mc6809_opcode->name);
+		size += mc6809_append_indexed_args (buf_asm,
+						    opcode_args) + 1;
 		break;
 	case PUSHPULLSYSTEM:
 	case PUSHPULLUSER:
-		strcpy (op->buf_asm, mc6809_opcode->name);
-		op->size += mc6809_append_pushpull_args(mc6809_opcode->mode,
-							op->buf_asm,
-							opcode_args);
+		strcpy (buf_asm, mc6809_opcode->name);
+		size += mc6809_append_pushpull_args(mc6809_opcode->mode,
+						    buf_asm,
+						    opcode_args);
 		break;
 	case EXTENDED:
-		sprintf (op->buf_asm,
+		sprintf (buf_asm,
 			 "%s $%04x",
 			 mc6809_opcode->name,
 			 opcode_args[0] * 256 + opcode_args[1]);
-		op->size += 3;
+		size += 3;
 		break;
 	}
 
-	return op->size;
+	return size;
 }
 
