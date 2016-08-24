@@ -1007,7 +1007,7 @@ static int mc6809_append_pushpull_args(enum instruction_mode mode,
 	return 2;
 }
 
-int mc6809_disassemble(RAsm *a, RAsmOp *op, const ut8 *buf, int len) {
+int mc6809_disassemble(ut64 addr, RAsmOp *op, const ut8 *buf, int len) {
 	ut8 tfrexg_regmasked;
 	const char *tfrexg_source_reg;
 	const char *tfrexg_dest_reg;
@@ -1068,12 +1068,12 @@ int mc6809_disassemble(RAsm *a, RAsmOp *op, const ut8 *buf, int len) {
 		op->size += 2;
 		sprintf (op->buf_asm, "%s $%04x",
 			mc6809_opcode->name,
-			(ut16) (a->pc + (st8) *opcode_args + op->size) & 0xFFFF);
+			(ut16) (addr + (st8) *opcode_args + op->size) & 0xFFFF);
 		break;
 	case RELATIVELONG:
 		op->size += 3;
 		sprintf (op->buf_asm, "%s $%04x", mc6809_opcode->name,
-			(ut16) (a->pc + (st16)(opcode_args[0]*256+opcode_args[1])+op->size) & 0xFFFF);
+			(ut16) (addr + (st16)(opcode_args[0]*256+opcode_args[1])+op->size) & 0xFFFF);
 		break;
 	case TFREXG:
 		/* In the transfer/exchange mode, both top bits of the
