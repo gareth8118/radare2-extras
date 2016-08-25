@@ -1,7 +1,8 @@
 /* radare2 - GPL - Copyright 2016 - gde */
 
-#include <stdio.h>
 #include "mc6809.h"
+#include <stdio.h>
+#include <r_endian.h>
 
 const mc6809_opcodes_t mc6809_opcodes[256] = {
 	/* 0x00 */ {"neg",     DIRECT},
@@ -837,7 +838,7 @@ static int mc6809_append_indexed_args (char *buf_asm, const ut8 *buf)
 		case 0x09:
 			/* 16 bit offset from register, direct */
 			sprintf (postop_buffer,
-				 " $%04x,%c", buf[1] * 256 + buf[2],
+				 " $%04x,%c", r_read_be16 (&buf[1]),
 				 index_register);
 			postop_bytes = 3;
 			break;
@@ -892,7 +893,7 @@ static int mc6809_append_indexed_args (char *buf_asm, const ut8 *buf)
 		case 0x0d:
 			/* 16 bit offset from PC */
 			sprintf (postop_buffer,
-				 " $%04x,pc", buf[1]*256+buf[2]);
+				 " $%04x,pc", r_read_be16 (&buf[1]));
 			postop_bytes = 3;
 			break;
 		case 0x14:
@@ -910,7 +911,7 @@ static int mc6809_append_indexed_args (char *buf_asm, const ut8 *buf)
 		case 0x19:
 			/* 16 bit offset from register, indirect */
 			sprintf (postop_buffer,
-				 " [$%04x,%c]", buf[1] * 256 + buf[2],
+				 " [$%04x,%c]", r_read_be16 (&buf[1]),
 				 index_register);
 			postop_bytes = 3;
 			break;
@@ -953,13 +954,13 @@ static int mc6809_append_indexed_args (char *buf_asm, const ut8 *buf)
 		case 0x1d:
 			/* 16 bit offset from PC indirect */
 			sprintf (postop_buffer,
-				 " [$%04x,pc]", buf[1] * 256 + buf[2]);
+				 " [$%04x,pc]", r_read_be16 (&buf[1]));
 			postop_bytes = 3;
 			break;
 		default:
 			if (buf[0] == 0x9f) {
 				sprintf (postop_buffer,
-				         " [$%04x]", buf[1] * 256 + buf[2]);
+				         " [$%04x]", r_read_be16 (&buf[1]));
 				postop_bytes = 3;
 				break;
 			} else {
@@ -1058,7 +1059,7 @@ int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len) {
 		size += 3;
 		sprintf (buf_asm,
 			"%s #$%04x", mc6809_opcode->name,
-			opcode_args[0] * 256 + opcode_args[1]);
+			r_read_be16 (opcode_args));
 		break;
 	case DIRECT:
 		size += 2;
@@ -1074,7 +1075,7 @@ int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len) {
 	case RELATIVELONG:
 		size += 3;
 		sprintf (buf_asm, "%s $%04x", mc6809_opcode->name,
-			(ut16) (addr + (st16)(opcode_args[0]*256+opcode_args[1])+size) & 0xFFFF);
+			(ut16) (addr + (st16)(r_read_be16 (opcode_args))+size) & 0xFFFF);
 		break;
 	case TFREXG:
 		/* In the transfer/exchange mode, both top bits of the
@@ -1119,7 +1120,7 @@ int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len) {
 		sprintf (buf_asm,
 			 "%s $%04x",
 			 mc6809_opcode->name,
-			 opcode_args[0] * 256 + opcode_args[1]);
+			 r_read_be16 (opcode_args));
 		size += 3;
 		break;
 	}
