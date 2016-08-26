@@ -3,17 +3,18 @@
 #include <r_types.h>
 #include <r_lib.h>
 #include <r_anal.h>
+#include "mc6809.h"
 
 static void mc6809_op_size (const ut8 *data, int *size, int *size_prefix) {
-	switch (data[0]) {
-		
-	}
+	;
 }
 
 static int mc6809_anal_op (RAnal *anal, RAnalOp *op, ut64 addr, const ut8 *data, int len) {
 	int ilen;
 
 	memset (op, 0, sizeof(RAnalOp));
+
+	
 
 	mc6809_op_size (data, &len, &op->nopcode);
 
@@ -23,13 +24,9 @@ static int mc6809_anal_op (RAnal *anal, RAnalOp *op, ut64 addr, const ut8 *data,
 static int mc6809_anal_archinfo (RAnal *anal, int query) {
 	switch (query) {
 	case R_ANAL_ARCHINFO_MIN_OP_SIZE:
-		/* plenty of single byte opcodes */
-		return 1;
+		return MC6809_MIN_OP_SIZE;
 	case R_ANAL_ARCHINFO_MAX_OP_SIZE:
-		/* according to the MC6809 datasheet, 
-		   longest opcode is extended indexed addressing
-		   e.g. CMPY $7FFF,X */
-		return 5;
+		return MC6809_MAX_OP_SIZE;
 	default:
 		return -1;
 	}

@@ -5,6 +5,14 @@
 
 #include <r_asm.h>
 
+/* Minimum and maximum opcode sizes */
+/* there are plenty of single byte opcodes */
+#define MC6809_MIN_OP_SIZE 1
+/* according to the MC6809 datasheet, 
+   longest opcode is extended indexed addressing
+   e.g. CMPY $7FFF,X */
+#define MC6809_MAX_OP_SIZE 5
+
 enum instruction_mode {
 	NOMODE = -1,
 	INHERENT = 0,
