@@ -41,6 +41,6 @@ extern const mc6809_opcodes_t mc6809_page3_opcodes[256];
 extern const char *mc6809_register_field[16];
 extern const char mc6809_index_registers[];
 
-int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len);
+int mc6809_disassemble(ut64 addr, char *buf_asm, int *op_type, const ut8 *buf, int len);
 
 #endif

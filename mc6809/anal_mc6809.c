@@ -5,20 +5,16 @@
 #include <r_anal.h>
 #include "mc6809.h"
 
-static void mc6809_op_size (const ut8 *data, int *size, int *size_prefix) {
-	;
-}
-
 static int mc6809_anal_op (RAnal *anal, RAnalOp *op, ut64 addr, const ut8 *data, int len) {
-	int ilen;
+	char buf_asm[32];
+	int op_type;
 
 	memset (op, 0, sizeof(RAnalOp));
 
-	
+	op->addr = addr;
 
-	mc6809_op_size (data, &len, &op->nopcode);
-
-
+	op->size = mc6809_disassemble (addr, buf_asm, &op_type, data, len);
+	return op->size;
 }
 
 static int mc6809_anal_archinfo (RAnal *anal, int query) {

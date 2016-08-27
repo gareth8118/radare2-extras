@@ -1008,7 +1008,7 @@ static int mc6809_append_pushpull_args(enum instruction_mode mode,
 	return 2;
 }
 
-int mc6809_disassemble(ut64 addr, char *buf_asm, const ut8 *buf, int len) {
+int mc6809_disassemble(ut64 addr, char *buf_asm, int *op_type, const ut8 *buf, int len) {
 	int size;
 	ut8 tfrexg_regmasked;
 	const char *tfrexg_source_reg;
