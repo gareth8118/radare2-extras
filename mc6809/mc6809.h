@@ -30,6 +30,12 @@ enum instruction_mode {
 	PAGE3,
 };
 
+enum opcode_type {
+	MC6809_OP_TYPE_UNK = -1,
+	MC6809_OP_TYPE_NOP = 0,
+
+};
+
 typedef struct mc6809_opcodes_t {
 	char *name;
 	enum instruction_mode mode;
