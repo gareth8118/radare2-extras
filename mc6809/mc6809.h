@@ -39,6 +39,7 @@ enum opcode_type {
 typedef struct mc6809_opcodes_t {
 	char *name;
 	enum instruction_mode mode;
+	enum opcode_type type;
 } mc6809_opcodes_t;
 
 extern const mc6809_opcodes_t mc6809_opcodes[256];
